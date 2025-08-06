@@ -4,29 +4,38 @@ require('dotenv').config();
 
 const createAdmin = async () => {
   try {
-    // Connect to MongoDB
+    
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    if (!adminEmail || !adminPassword) {
+      console.error('❌ Admin credentials not provided in environment variables');
+      console.log('Please set ADMIN_EMAIL and ADMIN_PASSWORD in your .env file');
+      process.exit(1);
+    }
+
+    
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to MongoDB');
 
-    // Check if admin already exists
-    const existingAdmin = await Admin.findOne({ email: 'admin@ecommerce.com' });
+    
+    const existingAdmin = await Admin.findOne({ email: adminEmail });
     if (existingAdmin) {
       console.log('Admin already exists!');
-      console.log('Email: admin@ecommerce.com');
-      console.log('Password: admin123');
+      console.log(`Email: ${adminEmail}`);
       process.exit(0);
     }
 
-    // Create new admin
+    
     const admin = new Admin({
-      email: 'admin@ecommerce.com',
-      password: 'admin123' // This will be hashed automatically by the pre-save middleware
+      email: adminEmail,
+      password: adminPassword 
     });
 
     await admin.save();
     console.log('✅ Admin created successfully!');
-    console.log('📧 Email: admin@ecommerce.com');
-    console.log('🔒 Password: admin123');
+    console.log(`📧 Email: ${adminEmail}`);
+    console.log('🔒 Password: [HIDDEN FOR SECURITY]');
     console.log('');
     console.log('You can now login to the admin dashboard with these credentials.');
     

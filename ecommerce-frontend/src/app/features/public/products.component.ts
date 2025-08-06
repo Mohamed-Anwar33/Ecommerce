@@ -30,12 +30,12 @@ export class ProductsComponent implements OnInit {
   isLoading = true;
   private fallbackImage = 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop&auto=format';
 
-  // Search, filter, sort state
+  
   searchTerm: string = '';
   sortBy: string = 'name';
   priceRange = { min: null as number | null, max: null as number | null };
 
-  // Compare (localStorage for persistence)
+  
   compare: number[] = [];
 
   constructor(
@@ -65,7 +65,7 @@ export class ProductsComponent implements OnInit {
     });
   }
 
-  // --- Search, Filter, Sort Logic ---
+  
   onSearchChange() {
     this.applyFilters();
   }
@@ -86,21 +86,21 @@ export class ProductsComponent implements OnInit {
   }
   applyFilters() {
     let filtered = [...this.products];
-    // Search
+    
     if (this.searchTerm && this.searchTerm.trim() !== '') {
       const term = this.searchTerm.trim().toLowerCase();
       filtered = filtered.filter(p =>
         p.name?.toLowerCase().includes(term) || p.description?.toLowerCase().includes(term)
       );
     }
-    // Price Range
+    
     if (this.priceRange.min !== null) {
       filtered = filtered.filter(p => p.price >= this.priceRange.min!);
     }
     if (this.priceRange.max !== null) {
       filtered = filtered.filter(p => p.price <= this.priceRange.max!);
     }
-    // Sorting
+    
     switch (this.sortBy) {
       case 'price-low':
         filtered.sort((a, b) => a.price - b.price); break;
@@ -117,7 +117,7 @@ export class ProductsComponent implements OnInit {
   }
 
 
-  // --- Compare Logic ---
+  
   loadCompare() {
     const data = localStorage.getItem('compare');
     this.compare = data ? JSON.parse(data) : [];
@@ -138,7 +138,7 @@ export class ProductsComponent implements OnInit {
     return this.compare.includes(productId);
   }
 
-  // --- Product Helpers ---
+  
   trackByProductId(index: number, product: Product) {
     return product.id;
   }
@@ -150,7 +150,7 @@ export class ProductsComponent implements OnInit {
     return diffDays <= 7;
   }
   getProductRating(product: Product): number {
-    // Example: use product.rating or fallback to random for demo
+    
     return product.rating ?? Math.floor(Math.random() * 3) + 3;
   }
   getDiscountPercentage(product: Product): number {
@@ -170,11 +170,11 @@ export class ProductsComponent implements OnInit {
     return 'In Stock';
   }
   openQuickView(product: Product) {
-    // Placeholder for modal/dialog
+    
     alert('Quick View for: ' + product.name);
   }
 
-  // --- (rest of the original methods below remain unchanged) ---
+  
 
 
   validateProductImages() {
@@ -191,7 +191,7 @@ export class ProductsComponent implements OnInit {
   isValidImageUrl(url: string): boolean {
     try {
       new URL(url);
-      // Accept Unsplash URLs and common image extensions
+      
       return url.includes('images.unsplash.com') || url.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) !== null;
     } catch {
       return false;
@@ -199,25 +199,25 @@ export class ProductsComponent implements OnInit {
   }
 
   getProductImage(product: Product): string {
-    // Priority 1: Check if product has base64 image data
+    
     if (product.image && product.image.startsWith('data:image/')) {
       console.log(`Using base64 image for product ${product.name}`);
       return product.image;
     }
     
-    // Priority 2: Check if product has imageFile with base64 data
+    
     if (product.imageFile && typeof product.imageFile === 'string' && product.imageFile.startsWith('data:image/')) {
       console.log(`Using base64 imageFile for product ${product.name}`);
       return product.imageFile;
     }
     
-    // Priority 3: Check if product has valid image URL
+    
     if (product.image && product.image.trim() !== '' && this.isValidImageUrl(product.image)) {
       console.log(`Using URL image for product ${product.name}:`, product.image.substring(0, 60) + '...');
       return product.image;
     }
     
-    // Priority 4: Return fallback image
+    
     console.warn(`Using fallback image for product ${product.name}`);
     return this.fallbackImage;
   }
@@ -231,11 +231,11 @@ export class ProductsComponent implements OnInit {
 
   addToCart(product: Product) {
     this.cartService.addToCart(product);
-    // Notification is handled by cart service
+    
   }
 
   editProduct(product: Product) {
-    // Navigate to edit product page with query parameter
+    
     this.router.navigate(['/add-product'], { queryParams: { edit: product.id } });
   }
 

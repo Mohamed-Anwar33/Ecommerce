@@ -4,7 +4,7 @@
     <p class="products-subtitle">Discover amazing products with unbeatable prices and quality!</p>
   </header>
   
-  <!-- Search and Filter Section -->
+  
   <section class="search-filter-section" *ngIf="!isLoading">
     <div class="search-bar">
       <div class="search-input-container">
@@ -65,15 +65,15 @@
       </div>
     </div>
   </section>
+
   
-  <!-- Loading Section -->
   <div class="loading" *ngIf="isLoading">
     <div class="loading-skeleton">
       <div class="skeleton-item" *ngFor="let item of [1,2,3,4,5,6]"></div>
     </div>
   </div>
   
-  <!-- Empty State -->
+  
   <div class="empty-state" *ngIf="!isLoading && filteredProducts.length === 0">
     <div class="empty-icon">
       <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
@@ -88,10 +88,9 @@
     </button>
   </div>
   
-  <!-- Products Grid -->
   <section class="products-list" *ngIf="!isLoading && filteredProducts.length > 0">
     <div class="product-item" *ngFor="let product of filteredProducts; trackBy: trackByProductId">
-      <!-- Product Badges -->
+      
       <div class="product-badges">
         <span class="badge new-badge" *ngIf="isNewProduct(product)">New</span>
         <span class="badge sale-badge" *ngIf="product.originalPrice && product.originalPrice > product.price">Sale</span>
@@ -103,7 +102,7 @@
       <div class="product-image">
         <img [src]="getProductImage(product)" [alt]="product.name" (error)="onImageError($event)" loading="lazy">
         
-        <!-- Owner Actions Overlay -->
+        
         <div class="image-overlay" *ngIf="authService.getCurrentUser()?.id === product.ownerId || adminAuthService.isAdminAuthenticated()">
           <button class="edit-btn" (click)="editProduct(product)">Edit</button>
           <button class="delete-btn" (click)="deleteProduct(product)">Delete</button>
@@ -114,7 +113,7 @@
         <h3 class="product-name">{{ product.name }}</h3>
         <p class="product-description">{{ product.description }}</p>
         
-        <!-- Price Section -->
+        
         <div class="price-section">
           <span class="current-price">${{ product.price }}</span>
           <span class="original-price" *ngIf="product.originalPrice && product.originalPrice > product.price">
@@ -129,7 +128,6 @@
           <small>Sold by: User {{ product.ownerId }}</small>
         </div>
         
-        <!-- Action Buttons -->
         <div class="product-actions">
           <button 
             class="add-to-cart-btn" 

@@ -51,7 +51,7 @@ const createProduct = async (req, res, next) => {
 const getProducts = async (req, res, next) => {
   try {
     const products = await Product.find({});
-    // Transform products to include ownerId for frontend compatibility
+    
     const transformedProducts = products.map(product => ({
       ...product.toObject(),
       id: product._id.toString(),
@@ -67,20 +67,16 @@ const updateProduct = async (req, res, next) => {
   try {
     console.log('==> updateProduct called, user:', req.user, 'productId:', req.params.id);
     
-    // Try to find product by ObjectId first, then by custom id field
     let product;
     try {
-      // Try finding by MongoDB ObjectId
       product = await Product.findById(req.params.id);
     } catch (error) {
-      // If ObjectId cast fails, try finding by custom id field
       console.log('ObjectId cast failed, trying custom id field');
       product = await Product.findOne({ id: req.params.id });
     }
     
     if (!product) return res.status(404).json({ message: "Product not found" });
 
-    // Debug log
     console.log('Product owner:', product.owner.toString(), 'Req user id:', req.user.id);
     if (product.owner.toString() !== String(req.user.id) && !req.user.isAdmin) {
       return res.status(403).json({ message: "You are not authorized to update this product" });
@@ -205,20 +201,17 @@ const adminUpdateProduct = async (req, res, next) => {
 
     console.log('Updating product with data:', updateData);
 
-    // Use findByIdAndUpdate to update the product directly
-    // Admin can update any product, so we bypass owner validation
     let updatedProduct;
     try {
       updatedProduct = await Product.findByIdAndUpdate(
         req.params.id,
         updateData,
         { 
-          new: true, // Return updated document
-          runValidators: false // Skip validation to avoid owner field issues
+          new: true, 
+          runValidators: false 
         }
       );
     } catch (error) {
-      // Try with legacy id field if ObjectId fails
       updatedProduct = await Product.findOneAndUpdate(
         { id: req.params.id },
         updateData,
@@ -245,7 +238,6 @@ const adminDeleteProduct = async (req, res, next) => {
   try {
     console.log('==> adminDeleteProduct called, admin:', req.user, 'productId:', req.params.id);
     
-    // Admin can delete any product
     let product;
     try {
       product = await Product.findById(req.params.id);

@@ -140,15 +140,15 @@ export class AuthService {
     return this.currentUser;
   }
 
-  // Update current user data and emit changes
+  
   updateCurrentUserData(updatedUser: User): void {
     this.currentUser = updatedUser;
     this.currentUserSubject.next(updatedUser);
     
-    // Update in localStorage as well
-    localStorage.setItem('ecommerce_currentUser', JSON.stringify(updatedUser));
     
-    // Update in users array if exists
+    localStorage.setItem('ecommerce_currentUser', JSON.stringify(updatedUser));
+      
+    
     const userIndex = this.users.findIndex(u => u.id === updatedUser.id);
     if (userIndex !== -1) {
       this.users[userIndex] = updatedUser;

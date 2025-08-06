@@ -1,0 +1,47 @@
+<nav class="header-nav">
+  <!-- Hamburger Button (mobile only) -->
+  <button class="hamburger" (click)="menuOpen = !menuOpen" aria-label="Toggle navigation" [class.open]="menuOpen">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  <!-- Nav Links Container -->
+  <div class="nav-links" [class.open]="menuOpen">
+
+  <a routerLink="/home" routerLinkActive="active">Home</a>
+  <a routerLink="/products" routerLinkActive="active">Products</a>
+  
+  <!-- User Navigation -->
+  <a routerLink="/user-dashboard" *ngIf="authService.isAuthenticated()" class="dashboard-btn">
+    <i class="bi bi-speedometer2"></i>
+    Dashboard
+  </a>
+  <a routerLink="/add-product" *ngIf="authService.isAuthenticated()" class="add-product-link">
+    <i class="bi bi-plus-circle"></i> Add Product
+  </a>
+  <a routerLink="/cart" routerLinkActive="active" *ngIf="authService.isAuthenticated()" class="cart-link">
+    <i class="bi bi-cart"></i> Cart ({{ cartItemCount }})
+  </a>
+  
+  <!-- Admin Navigation -->
+  <a routerLink="/admin/dashboard" routerLinkActive="active" *ngIf="adminAuthService.isAdminAuthenticated()" class="admin-dashboard-btn">
+    <i class="bi bi-gear"></i> Admin Dashboard
+  </a>
+  
+  <!-- Authentication Links - Only show when NOT authenticated -->
+  <a routerLink="/login" routerLinkActive="active" *ngIf="!authService.isAuthenticated() && !adminAuthService.isAdminAuthenticated()" class="login-btn">
+    <i class="bi bi-box-arrow-in-right"></i> Login
+  </a>
+  <a routerLink="/signup" routerLinkActive="active" *ngIf="!authService.isAuthenticated() && !adminAuthService.isAdminAuthenticated()" class="signup-btn">
+    <i class="bi bi-person-plus"></i> Join Us
+  </a>
+  <a routerLink="/admin/login" routerLinkActive="active" *ngIf="!authService.isAuthenticated() && !adminAuthService.isAdminAuthenticated()" class="admin-login-btn">
+    <i class="bi bi-shield-lock"></i> Admin
+  </a>
+  
+  <!-- Logout Button - Show when any user is authenticated -->
+  <button class="logout-btn" *ngIf="authService.isAuthenticated() || adminAuthService.isAdminAuthenticated()" (click)="logout()">
+    <i class="bi bi-box-arrow-right"></i> Logout
+  </button>
+  </div>
+</nav>

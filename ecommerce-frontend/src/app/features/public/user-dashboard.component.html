@@ -1,0 +1,145 @@
+<div class="user-dashboard-container" [@fadeIn]>
+  <header class="dashboard-header">
+    <div class="user-info">
+      <div class="avatar">
+        <i class="bi bi-person-circle"></i>
+      </div>
+      <div class="user-details">
+        <h1 class="welcome-title">Hello, {{ currentUser?.name }}!</h1>
+        <p class="user-email">{{ currentUser?.email }}</p>
+        <span class="user-status" [class.confirmed]="currentUser?.isEmailVerified" [class.pending]="!currentUser?.isEmailVerified">
+          {{ currentUser?.isEmailVerified ? 'Confirmed' : 'Pending Confirmation' }}
+        </span>
+      </div>
+    </div>
+    <div class="quick-actions">
+      <button class="add-product-btn" routerLink="/add-product">
+        <i class="bi bi-plus-circle"></i>
+        Add New Product
+      </button>
+    </div>
+  </header>
+
+  <div class="dashboard-stats">
+    <div class="stat-card">
+      <div class="stat-icon products">
+        <i class="bi bi-box-seam"></i>
+      </div>
+      <div class="stat-info">
+        <h3>{{ userProducts.length }}</h3>
+        <p>My Products</p>
+      </div>
+    </div>
+    
+
+    
+    <div class="stat-card">
+      <div class="stat-icon revenue">
+        <i class="bi bi-currency-dollar"></i>
+      </div>
+      <div class="stat-info">
+        <h3>${{ getTotalValue() }}</h3>
+        <p>Product Value</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading your products...</p>
+  </div>
+
+  <section class="my-products" *ngIf="!isLoading">
+    <div class="section-header">
+      <h2>My Products</h2>
+      <div class="view-options">
+        <button 
+          class="view-btn" 
+          [class.active]="viewMode === 'grid'"
+          (click)="setViewMode('grid')"
+        >
+          <i class="bi bi-grid-3x3-gap"></i>
+        </button>
+        <button 
+          class="view-btn" 
+          [class.active]="viewMode === 'list'"
+          (click)="setViewMode('list')"
+        >
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="userProducts.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="bi bi-box"></i>
+      </div>
+      <h3>No products found</h3>
+      <p>Start by adding your first product to develop your store</p>
+      <button class="add-first-product-btn" routerLink="/add-product">
+        Add New Product
+      </button>
+    </div>
+
+    <!-- Grid View -->
+    <div *ngIf="userProducts.length > 0 && viewMode === 'grid'" class="products-grid">
+      <div class="product-card" *ngFor="let product of userProducts">
+        <div class="product-image">
+          <img [src]="getProductImage(product)" [alt]="product.name" (error)="onImageError($event)">
+          <div class="product-overlay">
+            <button class="edit-product-btn" (click)="editProduct(product)">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="delete-product-btn" (click)="deleteProduct(product)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-description">{{ product.description }}</p>
+          <div class="product-price">${{ product.price }}</div>
+          <div class="product-actions">
+            <button class="btn-secondary" (click)="viewProduct(product)">View</button>
+            <button class="btn-primary" (click)="editProduct(product)">Edit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- List View -->
+    <div *ngIf="userProducts.length > 0 && viewMode === 'list'" class="products-list">
+      <div class="table-container">
+        <table class="products-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Product Name</th>
+              <th>Description</th>
+              <th>Price</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of userProducts">
+              <td>
+                <img [src]="getProductImage(product)" [alt]="product.name" class="table-product-image">
+              </td>
+              <td class="product-name-cell">{{ product.name }}</td>
+              <td class="product-description-cell">{{ product.description }}</td>
+              <td class="product-price-cell">${{ product.price }}</td>
+              <td class="actions-cell">
+                <button class="table-btn edit" (click)="editProduct(product)">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="table-btn delete" (click)="deleteProduct(product)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,107 @@
+<div class="cart-container" [@fadeIn]>
+  <header class="cart-header">
+    <h1 class="cart-title">Shopping Cart</h1>
+    <p class="cart-subtitle">Review your selected items</p>
+  </header>
+  
+  <section class="cart-items" *ngIf="cartItems.length > 0">
+    <div class="cart-item" *ngFor="let item of cartItems">
+      <div class="cart-item-image">
+        <img [src]="item.image" [alt]="item.name" (error)="onImageError($event)">
+      </div>
+      
+      <div class="cart-item-details">
+        <h3 class="cart-item-name">{{ item.name }}</h3>
+        <p class="cart-item-description">{{ item.description }}</p>
+        <div class="cart-item-price-section">
+          <span class="unit-price">Unit Price: ${{ item.price }}</span>
+          <span class="total-price">Total: ${{ getItemTotal(item) }}</span>
+        </div>
+        
+        <div class="quantity-display">
+          <span class="quantity-label">Quantity: </span>
+          <span class="quantity-value">{{ item.quantity }}</span>
+        </div>
+        
+        <button class="remove-btn" (click)="removeFromCart(item.cartItemId)">
+          <i class="bi bi-trash"></i>
+          Remove from Cart
+        </button>
+      </div>
+    </div>
+    
+    <div class="cart-summary">
+      <div class="summary-row">
+        <span>Total Items:</span>
+        <span>{{ getTotalItemsCount() }}</span>
+      </div>
+      <div class="summary-row total-row">
+        <span>Grand Total:</span>
+        <span>${{ totalPrice }}</span>
+      </div>
+      
+      <div class="cart-actions">
+        <button class="clear-cart-btn" (click)="clearCart()">
+          <i class="bi bi-trash3"></i>
+          Clear Cart
+        </button>
+        <button class="checkout-btn" (click)="onCheckout()">
+          <i class="bi bi-credit-card"></i>
+          Checkout
+        </button>
+      </div>
+    </div>
+  </section>
+  
+  <div class="empty-cart" *ngIf="cartItems.length === 0">
+    <div class="empty-cart-icon">
+      <i class="bi bi-cart-x"></i>
+    </div>
+    <h3>Your Cart is Empty</h3>
+    <p>You haven't added any products yet</p>
+    <a routerLink="/products" class="continue-shopping-btn">
+      <i class="bi bi-arrow-left"></i>
+      Continue Shopping
+    </a>
+  </div>
+</div>
+
+<!-- Clear Cart Confirmation Modal -->
+<div class="modal fade" [class.show]="showClearModal" [style.display]="showClearModal ? 'block' : 'none'" 
+     tabindex="-1" role="dialog" aria-labelledby="clearCartModalLabel" aria-hidden="true"
+     *ngIf="showClearModal">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="clearCartModalLabel">
+          <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+          Clear Cart
+        </h5>
+        <button type="button" class="btn-close" (click)="cancelClearCart()" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center">
+          <div class="mb-3">
+            <i class="bi bi-cart-x" style="font-size: 3rem; color: #dc3545;"></i>
+          </div>
+          <h6 class="mb-3">Are you sure you want to clear your cart?</h6>
+          <p class="text-muted mb-0">This action will remove all items from your cart and cannot be undone.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelClearCart()">
+          <i class="bi bi-x-circle me-1"></i>
+          Cancel
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmClearCart()">
+          <i class="bi bi-trash me-1"></i>
+          Clear Cart
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade" [class.show]="showClearModal" *ngIf="showClearModal" 
+     (click)="cancelClearCart()"></div>

@@ -1,0 +1,151 @@
+<div class="products-container" [@slideIn]>
+  <header class="products-header">
+    <h1 class="products-title">Our Products</h1>
+    <p class="products-subtitle">Discover amazing products with unbeatable prices and quality!</p>
+  </header>
+  
+  <!-- Search and Filter Section -->
+  <section class="search-filter-section" *ngIf="!isLoading">
+    <div class="search-bar">
+      <div class="search-input-container">
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          (input)="onSearchChange()"
+          placeholder="Search products by name or description..."
+          class="search-input"
+        >
+        <button class="search-btn" (click)="onSearchChange()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <div class="filters-container">
+      <div class="filter-group">
+        <label>Sort by:</label>
+        <select [(ngModel)]="sortBy" (change)="onSortChange()" class="filter-select">
+          <option value="name">Name</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="rating">Highest Rated</option>
+          <option value="newest">Newest First</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Price Range:</label>
+        <div class="price-range">
+          <input 
+            type="number" 
+            [(ngModel)]="priceRange.min" 
+            (input)="onPriceRangeChange()"
+            placeholder="Min"
+            class="price-input"
+          >
+          <span>-</span>
+          <input 
+            type="number" 
+            [(ngModel)]="priceRange.max" 
+            (input)="onPriceRangeChange()"
+            placeholder="Max"
+            class="price-input"
+          >
+        </div>
+      </div>
+      
+      <div class="results-info">
+        <span class="results-count">{{ filteredProducts.length }} of {{ products.length }} products</span>
+        <button class="clear-filters-btn" (click)="clearFilters()" *ngIf="hasActiveFilters()">
+          Clear Filters
+        </button>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Loading Section -->
+  <div class="loading" *ngIf="isLoading">
+    <div class="loading-skeleton">
+      <div class="skeleton-item" *ngFor="let item of [1,2,3,4,5,6]"></div>
+    </div>
+  </div>
+  
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && filteredProducts.length === 0">
+    <div class="empty-icon">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+    </div>
+    <h3>No products found</h3>
+    <p>Try adjusting your search or filter criteria</p>
+    <button class="clear-filters-btn" (click)="clearFilters()" *ngIf="hasActiveFilters()">
+      Clear All Filters
+    </button>
+  </div>
+  
+  <!-- Products Grid -->
+  <section class="products-list" *ngIf="!isLoading && filteredProducts.length > 0">
+    <div class="product-item" *ngFor="let product of filteredProducts; trackBy: trackByProductId">
+      <!-- Product Badges -->
+      <div class="product-badges">
+        <span class="badge new-badge" *ngIf="isNewProduct(product)">New</span>
+        <span class="badge sale-badge" *ngIf="product.originalPrice && product.originalPrice > product.price">Sale</span>
+        <span class="badge out-of-stock-badge" *ngIf="product.stock === 0">Out of Stock</span>
+      </div>
+      
+
+      
+      <div class="product-image">
+        <img [src]="getProductImage(product)" [alt]="product.name" (error)="onImageError($event)" loading="lazy">
+        
+        <!-- Owner Actions Overlay -->
+        <div class="image-overlay" *ngIf="authService.getCurrentUser()?.id === product.ownerId || adminAuthService.isAdminAuthenticated()">
+          <button class="edit-btn" (click)="editProduct(product)">Edit</button>
+          <button class="delete-btn" (click)="deleteProduct(product)">Delete</button>
+        </div>
+      </div>
+      
+      <div class="product-content">
+        <h3 class="product-name">{{ product.name }}</h3>
+        <p class="product-description">{{ product.description }}</p>
+        
+        <!-- Price Section -->
+        <div class="price-section">
+          <span class="current-price">${{ product.price }}</span>
+          <span class="original-price" *ngIf="product.originalPrice && product.originalPrice > product.price">
+            ${{ product.originalPrice }}
+          </span>
+          <span class="discount" *ngIf="product.originalPrice && product.originalPrice > product.price">
+            {{ getDiscountPercentage(product) }}% OFF
+          </span>
+        </div>
+        
+        <div class="product-owner" *ngIf="product.ownerId > 0">
+          <small>Sold by: User {{ product.ownerId }}</small>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="product-actions">
+          <button 
+            class="add-to-cart-btn" 
+            (click)="addToCart(product)" 
+            *ngIf="authService.isAuthenticated()"
+            [disabled]="product.stock === 0"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            {{ product.stock === 0 ? 'Out of Stock' : 'Add to Cart' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,86 @@
+<div class="add-product-container" [@fadeIn]>
+  <header class="add-product-header">
+    <h1 class="add-product-title">{{ isEditMode ? 'Edit Product' : 'Add New Product' }}</h1>
+    <p class="add-product-subtitle">{{ isEditMode ? 'Update the product details' : 'Fill in the details to add a product' }}</p>
+  </header>
+  
+  <form class="add-product-form" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="name">Product Name *</label>
+      <input type="text" id="name" [(ngModel)]="name" name="name" required 
+             placeholder="Enter product name" class="form-control">
+    </div>
+    
+    <div class="form-group">
+      <label for="price">Price ($) *</label>
+      <input type="number" id="price" [(ngModel)]="price" name="price" required 
+             min="0" step="0.01" placeholder="0.00" class="form-control">
+    </div>
+    
+    <div class="form-group">
+      <label for="category">Category *</label>
+      <select id="category" [(ngModel)]="category" name="category" required class="form-control">
+        <option value="" disabled selected>Select category</option>
+        <option value="electronics">Electronics</option>
+        <option value="clothing">Clothing</option>
+        <option value="books">Books</option>
+        <option value="accessories">Accessories</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Product Image</label>
+      <div class="image-upload-section">
+        <div class="image-preview" *ngIf="imagePreview">
+          <img [src]="imagePreview" alt="Product preview" class="preview-image">
+          <button type="button" class="remove-image-btn" (click)="imagePreview = null; selectedFile = null">
+            <i class="bi bi-x-circle"></i>
+          </button>
+        </div>
+        
+        <div class="upload-options">
+          <div class="file-upload">
+            <input type="file" id="imageFile" (change)="onFileSelected($event)" 
+                   accept="image/*" class="file-input">
+            <label for="imageFile" class="file-upload-btn">
+              <i class="bi bi-cloud-upload"></i>
+              Choose Image File
+            </label>
+          </div>
+          
+          <div class="url-divider">OR</div>
+          
+          <div class="url-input">
+            <input type="url" id="image" [(ngModel)]="image" name="image" 
+                   placeholder="Enter image URL" class="form-control">
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="description">Description *</label>
+      <textarea id="description" [(ngModel)]="description" name="description" 
+                rows="4" required placeholder="Enter product description" 
+                class="form-control"></textarea>
+    </div>
+    
+    <div class="error-message" *ngIf="errorMessage">
+      <i class="bi bi-exclamation-triangle"></i>
+      {{ errorMessage }}
+    </div>
+    
+    <div class="form-actions">
+      <button type="button" class="cancel-btn" (click)="router.navigate(['/user-dashboard'])">
+        <i class="bi bi-arrow-left"></i>
+        Cancel
+      </button>
+      <button type="submit" class="submit-btn" [disabled]="isLoading">
+        <i class="bi" [class.bi-plus-circle]="!isEditMode" [class.bi-check-circle]="isEditMode"></i>
+        <span *ngIf="!isLoading">{{ isEditMode ? 'Update Product' : 'Add Product' }}</span>
+        <span *ngIf="isLoading">{{ isEditMode ? 'Updating...' : 'Adding...' }}</span>
+      </button>
+    </div>
+  </form>
+</div>

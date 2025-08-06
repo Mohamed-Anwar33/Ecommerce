@@ -1,0 +1,445 @@
+<div class="dashboard-container" [@fadeIn]>
+  <header class="dashboard-header">
+    <h1 class="dashboard-title">Admin Dashboard</h1>
+    <p class="dashboard-subtitle">Manage products and users</p>
+    
+    
+    <div class="dashboard-tabs">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'products'"
+        (click)="setActiveTab('products')"
+      >
+        Products ({{ products.length }})
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'users'"
+        (click)="setActiveTab('users')"
+      >
+        Users ({{ users.length }})
+      </button>
+    </div>
+  </header>
+  
+  <div class="loading" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading data...</p>
+  </div>
+  
+  <!-- Products Tab -->
+  <section class="products-section" *ngIf="!isLoading && activeTab === 'products'">
+    <div class="section-header">
+      <h2>Products Management</h2>
+      <button class="add-product-btn" (click)="addProduct()">Add New Product</button>
+    </div>
+    
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Owner</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of products">
+            <td>{{ product.id }}</td>
+            <td>
+              <img [src]="getProductImage(product)" [alt]="product.name" class="product-thumbnail">
+            </td>
+            <td>{{ product.name }}</td>
+            <td>${{ product.price }}</td>
+            <td>
+              <span *ngIf="product.ownerId === 0" class="owner-admin">Admin</span>
+              <span *ngIf="product.ownerId > 0" class="owner-user">User {{ product.ownerId }}</span>
+            </td>
+            <td class="actions">
+              <button class="edit-btn" (click)="editProduct(product.id)">Edit</button>
+              <button class="delete-btn" (click)="deleteProduct(product.id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  
+  <!-- Users Tab -->
+  <section class="users-section" *ngIf="!isLoading && activeTab === 'users'">
+    <div class="section-header">
+      <div class="header-top">
+        <h2>Users Management</h2>
+        <button class="add-user-btn" (click)="addUser()">
+          <i class="fas fa-plus"></i> Add New User
+        </button>
+      </div>
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-number">{{ getTotalUsers() }}</span>
+          <span class="stat-label">Total Users</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{ getConfirmedUsers() }}</span>
+          <span class="stat-label">Confirmed</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{ getPendingUsers() }}</span>
+          <span class="stat-label">Pending</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Role</th>
+            <th>Products</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>{{ user.id }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+              <span class="status" [class.confirmed]="user.isEmailVerified" [class.pending]="!user.isEmailVerified">
+                {{ user.isEmailVerified ? 'Confirmed' : 'Pending' }}
+              </span>
+            </td>
+            <td>
+              <span class="role" [class.admin]="user.role === 'admin'" [class.user]="user.role === 'user'">
+                {{ user.role }}
+              </span>
+            </td>
+            <td>{{ getUserProductCount(user.id) }}</td>
+            <td class="actions">
+              <div class="action-buttons">
+                <button 
+                  class="btn btn-sm btn-success me-1" 
+                  *ngIf="!user.isEmailVerified"
+                  (click)="confirmUserEmail(user)"
+                  title="Confirm Email"
+                >
+                  <i class="fas fa-check"></i>
+                </button>
+                <button 
+                  class="btn btn-sm btn-info me-1" 
+                  (click)="viewUserProducts(user.id)"
+                  title="View Products ({{ getUserProductCount(user.id) }})"
+                >
+                  <i class="fas fa-box"></i>
+                </button>
+                <button 
+                  class="btn btn-sm btn-warning me-1" 
+                  (click)="editUser(user)"
+                  title="Edit User"
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button 
+                  class="btn btn-sm btn-danger" 
+                  (click)="deleteUser(user.id)"
+                  title="Delete User"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Edit User Modal -->
+  <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-dark">
+          <h5 class="modal-title" id="editUserModalLabel">
+            <i class="fas fa-user-edit me-2"></i>Edit User: {{ selectedUser?.name }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeModal('editUserModal')" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form #editUserForm="ngForm" (ngSubmit)="saveUserChanges()">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="editUserName" class="form-label">
+                    <i class="fas fa-user me-1"></i>Full Name
+                  </label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="editUserName" 
+                    [(ngModel)]="editUserData.name" 
+                    name="name"
+                    required
+                    placeholder="Enter full name"
+                  >
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="editUserEmail" class="form-label">
+                    <i class="fas fa-envelope me-1"></i>Email Address
+                  </label>
+                  <input 
+                    type="email" 
+                    class="form-control" 
+                    id="editUserEmail" 
+                    [(ngModel)]="editUserData.email" 
+                    name="email"
+                    required
+                    placeholder="Enter email address"
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <div class="form-check form-switch">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      id="changePassword"
+                      [(ngModel)]="editUserData.changePassword"
+                      name="changePassword"
+                    >
+                    <label class="form-check-label" for="changePassword">
+                      <i class="fas fa-key me-1"></i>Change Password
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-3" *ngIf="editUserData.changePassword">
+                  <input 
+                    type="password" 
+                    class="form-control" 
+                    [(ngModel)]="editUserData.password" 
+                    name="password"
+                    placeholder="Enter new password"
+                    [required]="editUserData.changePassword"
+                  >
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <div class="form-check form-switch">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      id="emailVerified"
+                      [(ngModel)]="editUserData.isEmailVerified"
+                      name="isEmailVerified"
+                    >
+                    <label class="form-check-label" for="emailVerified">
+                      <i class="fas fa-check-circle me-1"></i>Email Verified
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="alert alert-info" role="alert">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>User Info:</strong> This user has {{ getUserProductCount(selectedUser?.id || 0) }} products
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Cancel
+          </button>
+          <button type="button" class="btn btn-warning" (click)="saveUserChanges()">
+            <i class="fas fa-save me-1"></i>Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create User Modal -->
+  <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="createUserModalLabel">
+            <i class="fas fa-user-plus me-2"></i>Create New User
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeModal('createUserModal')" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form #createUserForm="ngForm" (ngSubmit)="saveNewUser()">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="newUserName" class="form-label">
+                    <i class="fas fa-user me-1"></i>Full Name *
+                  </label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="newUserName" 
+                    [(ngModel)]="newUserData.name" 
+                    name="name"
+                    required
+                    placeholder="Enter full name"
+                  >
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="newUserEmail" class="form-label">
+                    <i class="fas fa-envelope me-1"></i>Email Address *
+                  </label>
+                  <input 
+                    type="email" 
+                    class="form-control" 
+                    id="newUserEmail" 
+                    [(ngModel)]="newUserData.email" 
+                    name="email"
+                    required
+                    placeholder="Enter email address"
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="newUserPassword" class="form-label">
+                    <i class="fas fa-key me-1"></i>Password *
+                  </label>
+                  <input 
+                    type="password" 
+                    class="form-control" 
+                    id="newUserPassword" 
+                    [(ngModel)]="newUserData.password" 
+                    name="password"
+                    required
+                    placeholder="Enter password"
+                  >
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <div class="form-check form-switch mt-4">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      id="newUserEmailVerified"
+                      [(ngModel)]="newUserData.isEmailVerified"
+                      name="isEmailVerified"
+                    >
+                    <label class="form-check-label" for="newUserEmailVerified">
+                      <i class="fas fa-check-circle me-1"></i>Email Verified
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="alert alert-warning" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Note:</strong> If email is not verified, the user will need to verify their email before logging in.
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal('createUserModal')">
+            <i class="fas fa-times me-1"></i>Cancel
+          </button>
+          <button type="button" class="btn btn-primary" (click)="saveNewUser()">
+            <i class="fas fa-user-plus me-1"></i>Create User
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View User Products Modal -->
+  <div class="modal fade" id="viewProductsModal" tabindex="-1" aria-labelledby="viewProductsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header bg-info text-white">
+          <h5 class="modal-title" id="viewProductsModalLabel">
+            <i class="fas fa-box me-2"></i>Products owned by {{ selectedUser?.name }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeModal('viewProductsModal')" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div *ngIf="userProducts.length === 0" class="text-center py-5">
+            <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No Products Found</h4>
+            <p class="text-muted">This user hasn't created any products yet.</p>
+          </div>
+          <div *ngIf="userProducts.length > 0">
+            <div class="row">
+              <div class="col-md-4 mb-3" *ngFor="let product of userProducts">
+                <div class="card h-100">
+                  <img [src]="getProductImage(product)" [alt]="product.name" class="card-img-top" style="height: 200px; object-fit: cover;">
+                  <div class="card-body">
+                    <h6 class="card-title">{{ product.name }}</h6>
+                    <p class="card-text text-muted small">{{ product.description || 'No description available' }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="badge bg-success">${{ product.price }}</span>
+                      <small class="text-muted">ID: {{ product.id }}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal('viewProductsModal')">
+            <i class="fas fa-times me-1"></i>Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="deleteConfirmModalLabel">
+            <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeModal('deleteConfirmModal')" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center">
+            <i class="fas fa-user-times fa-3x text-danger mb-3"></i>
+            <h5>Delete User: {{ selectedUser?.name }}?</h5>
+            <p class="text-muted">This action cannot be undone.</p>
+            <div *ngIf="getUserProductCount(selectedUser?.id || 0) > 0" class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>Warning:</strong> This will also delete {{ getUserProductCount(selectedUser?.id || 0) }} product(s) owned by this user.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal('deleteConfirmModal')">
+            <i class="fas fa-times me-1"></i>Cancel
+          </button>
+          <button type="button" class="btn btn-danger" (click)="confirmDeleteUser()">
+            <i class="fas fa-trash me-1"></i>Delete User
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

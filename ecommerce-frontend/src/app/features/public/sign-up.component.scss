@@ -1,0 +1,84 @@
+@use 'sass:color';
+
+$primary: #3498db;
+$secondary: #2c3e50;
+$accent: #e74c3c;
+$background: #ecf0f1;
+
+.signup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, $background, color.adjust($background, $lightness: 5%));
+  font-family: 'Roboto', sans-serif;
+  padding: 2rem;
+}
+
+.signup-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  .signup-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: $primary;
+  }
+  .signup-subtitle {
+    font-size: 1.2rem;
+    color: color.adjust($secondary, $lightness: -10%);
+  }
+}
+
+.signup-form {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  .form-group {
+    margin-bottom: 1.5rem;
+    label {
+      display: block;
+      font-size: 1rem;
+      color: $secondary;
+      margin-bottom: 0.5rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid color.adjust($background, $lightness: -10%);
+      border-radius: 8px;
+      font-size: 1rem;
+      &:focus {
+        outline: none;
+        border-color: $primary;
+        box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+      }
+    }
+  }
+  .error-message {
+    color: $accent;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  .signup-btn {
+    width: 100%;
+    background: $accent;
+    color: white;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    &:hover {
+      background: color.adjust($accent, $lightness: -10%);
+      transform: scale(1.05);
+    }
+  }
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');

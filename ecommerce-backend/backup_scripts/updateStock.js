@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
+require('dotenv').config();
 
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/ecommerce', {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -11,19 +11,17 @@ async function updateAllProductsStock() {
   try {
     console.log('Updating stock for all products...');
     
-    // Update all products to have a stock quantity of 100
     const result = await Product.updateMany(
-      {}, // Empty filter means all products
+      {}, 
       { 
         $set: { 
-          quantity: 100 // Set stock to 100 for all products
+          quantity: 100 
         } 
       }
     );
     
     console.log(`Updated ${result.modifiedCount} products with new stock quantity.`);
     
-    // Display all products with their new quantities
     const products = await Product.find({}).select('name quantity category');
     console.log('\nCurrent product stock levels:');
     products.forEach(product => {
@@ -39,5 +37,4 @@ async function updateAllProductsStock() {
   }
 }
 
-// Run the update
 updateAllProductsStock();

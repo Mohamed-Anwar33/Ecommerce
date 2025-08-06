@@ -17,8 +17,15 @@ app.use(cors());
 app.use(express.json());
 
 const initializeAdmin = async () => {
-  const adminEmail = "eisam2350@gmail.com";
-  const adminPassword = "mohamed 123";
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminEmail || !adminPassword) {
+    console.log('⚠️ Admin credentials not provided in environment variables');
+    console.log('Skipping admin initialization...');
+    return;
+  }
+
   const adminExists = await Admin.findOne({ email: adminEmail });
 
   if (!adminExists) {
